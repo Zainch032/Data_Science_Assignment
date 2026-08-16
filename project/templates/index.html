@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NexaTel — Customer Churn & Retention Intelligence</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-brand">
+                <div class="logo-icon">📡</div>
+                <div>
+                    <h1>NexaTel <span>Retention Portal</span></h1>
+                    <p>AI-Powered Customer Churn Intelligence & Retention Playbook</p>
+                </div>
+            </div>
+            <!-- Navigation Tabs -->
+            <nav class="nav-tabs">
+                <button class="tab-btn active" data-tab="predictor-tab">
+                    <span class="icon">🎯</span> Agent Workbench
+                </button>
+                <button class="tab-btn" data-tab="eda-tab">
+                    <span class="icon">📊</span> EDA & Model Insights
+                </button>
+            </nav>
+        </header>
+
+        <!-- Main Content Body -->
+        <main class="app-main">
+            <!-- TAB 1: Agent Workbench (Predictor) -->
+            <section id="predictor-tab" class="tab-content active">
+                <div class="workbench-grid">
+                    <!-- Left: Input Form Card -->
+                    <div class="card form-card">
+                        <div class="card-header">
+                            <h2>Customer Account Details</h2>
+                            <p>Select an existing customer or enter custom parameters to evaluate churn risk.</p>
+                        </div>
+                        
+                        <!-- Customer DB Quick Lookup -->
+                        <div class="lookup-box">
+                            <label for="customer-lookup">🔍 Quick Lookup from NexaTel DB:</label>
+                            <div class="lookup-controls">
+                                <select id="customer-lookup" class="form-control">
+                                    <option value="">-- Choose Customer ID --</option>
+                                </select>
+                                <button type="button" id="btn-load-customer" class="btn btn-secondary">Load Profile</button>
+                            </div>
+                        </div>
+
+                        <form id="churn-form">
+                            <div class="form-section-title">👤 Customer Demographics</div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Gender</label>
+                                    <select name="gender" class="form-control">
+                                        <option value="Female">Female</option>
+                                        <option value="Male">Male</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Senior Citizen</label>
+                                    <select name="senior_citizen" class="form-control">
+                                        <option value="0">No</option>
+                                        <option value="1">Yes</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Partner</label>
+                                    <select name="partner" class="form-control">
+                                        <option value="Yes">Yes</option>
+                                        <option value="No">No</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Dependents</label>
+                                    <select name="dependents" class="form-control">
+                                        <option value="No">No</option>
+                                        <option value="Yes">Yes</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-section-title">💳 Account & Billing Details</div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Tenure (Months)</label>
+                                    <input type="number" name="tenure" class="form-control" value="2" min="0" max="100" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Contract Type</label>
+                                    <select name="contract" class="form-control">
+                                        <option value="Month-to-month">Month-to-month</option>
+                                        <option value="One year">One year</option>
+                                        <option value="Two year">Two year</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Monthly Charges ($)</label>
+                                    <input type="number" step="0.01" name="monthly_charges" class="form-control" value="85.50" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Total Charges ($)</label>
+                                    <input type="number" step="0.01" name="total_charges" class="form-control" value="171.00" placeholder="Auto-calculated if blank">
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Payment Method</label>
+                                    <select name="payment_method" class="form-control">
+                                        <option value="Electronic check">Electronic check (High Risk)</option>
+                                        <option value="Mailed check">Mailed check</option>
+                                        <option value="Bank transfer (automatic)">Bank transfer (automatic)</option>
+                                        <option value="Credit card (automatic)">Credit card (automatic)</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Paperless Billing</label>
+                                    <select name="paperless_billing" class="form-control">
+                                        <option value="Yes">Yes</option>
+                                        <option value="No">No</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-section-title">💻 Services & Add-Ons</div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Phone Service</label>
+                                    <select name="phone_service" class="form-control">
+                                        <option value="Yes">Yes</option>
+                                        <option value="No">No</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Multiple Lines</label>
+                                    <select name="multiple_lines" class="form-control">
+                                        <option value="No">No</option>
+                                        <option value="Yes">Yes</option>
+                                        <option value="No phone service">No phone service</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Internet Service</label>
+                                    <select name="internet_service" class="form-control">
+                                        <option value="Fiber optic">Fiber optic</option>
+                                        <option value="DSL">DSL</option>
+                                        <option value="No">No</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Online Security</label>
+                                    <select name="online_security" class="form-control">
+                                        <option value="No">No</option>
+                                        <option value="Yes">Yes</option>
+                                        <option value="No internet service">No internet service</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Online Backup</label>
+                                    <select name="online_backup" class="form-control">
+                                        <option value="No">No</option>
+                                        <option value="Yes">Yes</option>
+                                        <option value="No internet service">No internet service</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Tech Support</label>
+                                    <select name="tech_support" class="form-control">
+                                        <option value="No">No</option>
+                                        <option value="Yes">Yes</option>
+                                        <option value="No internet service">No internet service</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Device Protection</label>
+                                    <select name="device_protection" class="form-control">
+                                        <option value="No">No</option>
+                                        <option value="Yes">Yes</option>
+                                        <option value="No internet service">No internet service</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Streaming TV</label>
+                                    <select name="streaming_tv" class="form-control">
+                                        <option value="No">No</option>
+                                        <option value="Yes">Yes</option>
+                                        <option value="No internet service">No internet service</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Streaming Movies</label>
+                                    <select name="streaming_movies" class="form-control">
+                                        <option value="No">No</option>
+                                        <option value="Yes">Yes</option>
+                                        <option value="No internet service">No internet service</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary btn-block">⚡ Predict Churn Risk</button>
+                        </form>
+                    </div>
+
+                    <!-- Right: Prediction Results Card -->
+                    <div class="card result-card" id="result-card">
+                        <div class="card-header">
+                            <h2>Churn Risk Assessment</h2>
+                            <p>Real-time AI prediction score & retention playbook</p>
+                        </div>
+                        
+                        <!-- Empty Placeholder State -->
+                        <div id="results-placeholder" class="placeholder-state">
+                            <div class="placeholder-icon">🔮</div>
+                            <h3>Ready for Assessment</h3>
+                            <p>Fill out customer details or select a Customer ID from the list, then click <strong>Predict Churn Risk</strong>.</p>
+                        </div>
+
+                        <!-- Active Results View -->
+                        <div id="results-active" class="results-container hidden">
+                            <!-- Gauge & Risk Level Header -->
+                            <div class="risk-overview">
+                                <div class="gauge-wrapper">
+                                    <svg class="gauge" viewBox="0 0 120 120">
+                                        <circle class="gauge-bg" cx="60" cy="60" r="50"></circle>
+                                        <circle id="gauge-fill" class="gauge-fill" cx="60" cy="60" r="50" stroke-dasharray="314" stroke-dashoffset="314"></circle>
+                                    </svg>
+                                    <div class="gauge-text">
+                                        <span id="score-val">0.0%</span>
+                                        <span class="score-label">Churn Risk</span>
+                                    </div>
+                                </div>
+                                <div class="risk-badge-box">
+                                    <div id="risk-badge" class="risk-badge high">HIGH RISK</div>
+                                    <p id="risk-summary" class="risk-summary">Customer exhibits high probability of churn within 30 days.</p>
+                                </div>
+                            </div>
+
+                            <!-- Top Churn Reasons -->
+                            <div class="section-container">
+                                <h3>⚠️ Top Churn Risk Drivers</h3>
+                                <div id="reasons-list" class="reasons-grid">
+                                    <!-- Dynamic Cards -->
+                                </div>
+                            </div>
+
+                            <!-- Retention Action Playbook -->
+                            <div class="section-container">
+                                <h3>💡 Recommended Retention Actions</h3>
+                                <div id="actions-list" class="actions-grid">
+                                    <!-- Dynamic Actions -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 2: EDA & Model Insights Dashboard -->
+            <section id="eda-tab" class="tab-content hidden">
+                <div class="dashboard-header">
+                    <h2>NexaTel Exploratory Data Analysis & Machine Learning Model Performance</h2>
+                    <p>Insights derived from 7,043 customer records and LightGBM model metrics.</p>
+                </div>
+
+                <!-- KPI Cards Grid -->
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <div class="kpi-icon">👥</div>
+                        <div class="kpi-info">
+                            <span class="kpi-val" id="kpi-total">7,043</span>
+                            <span class="kpi-lbl">Total Customers</span>
+                        </div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-icon">📉</div>
+                        <div class="kpi-info">
+                            <span class="kpi-val danger" id="kpi-churn">26.5%</span>
+                            <span class="kpi-lbl">Overall Churn Rate</span>
+                        </div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-icon">🚨</div>
+                        <div class="kpi-info">
+                            <span class="kpi-val warning" id="kpi-high-risk">65.6%</span>
+                            <span class="kpi-lbl">High Risk Segment Churn</span>
+                        </div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-icon">🎯</div>
+                        <div class="kpi-info">
+                            <span class="kpi-val success" id="kpi-recall">82.4%</span>
+                            <span class="kpi-lbl">Model Recall (Target Metric)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts Grid -->
+                <div class="charts-grid">
+                    <div class="card chart-card">
+                        <div class="card-header">
+                            <h3>Churn Rate by Contract Type</h3>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="contractChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="card chart-card">
+                        <div class="card-header">
+                            <h3>Churn Rate by Internet Service</h3>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="internetChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Feature Correlation & Model Performance -->
+                <div class="insight-cards-grid">
+                    <div class="card insight-card">
+                        <h3>🔑 Key Findings from EDA</h3>
+                        <ul class="insight-list">
+                            <li><strong>Contract Type:</strong> Month-to-month contracts account for <strong>88.5%</strong> of all customer churn.</li>
+                            <li><strong>High Risk Segment:</strong> Customers with <em>Month-to-month + No Tech Support + Tenure &lt; 12 months</em> churn at <strong>65.57%</strong>.</li>
+                            <li><strong>Payment Method:</strong> Electronic check users churn at <strong>45.3%</strong>, compared to ~15% for automatic credit card/bank transfer.</li>
+                            <li><strong>Service Depth:</strong> Customers with 4+ add-ons churn at <strong>&lt; 8%</strong> vs 26% for customers with 0 add-ons.</li>
+                        </ul>
+                    </div>
+                    <div class="card insight-card">
+                        <h3>⚡ Model Evaluation & Justification</h3>
+                        <ul class="insight-list">
+                            <li><strong>Primary Metric:</strong> Optimized for <strong>Recall (82.4%)</strong> because missing a churner costs NexaTel ~$74/month in lifetime value.</li>
+                            <li><strong>Model Architecture:</strong> LightGBM Classifier tuned with SMOTE oversampling on training data to handle class imbalance.</li>
+                            <li><strong>Scaler:</strong> StandardScaler fit on training numeric features only to prevent data leakage.</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- JS Scripts -->
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>
